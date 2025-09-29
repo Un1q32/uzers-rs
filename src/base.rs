@@ -790,9 +790,9 @@ pub fn group_access_list() -> io::Result<Vec<Group>> {
 /// ```
 pub fn get_user_groups<S: AsRef<OsStr> + ?Sized>(username: &S, gid: gid_t) -> Option<Vec<Group>> {
     // MacOS uses i32 instead of gid_t in getgrouplist for unknown reasons
-    #[cfg(all(unix, target_os = "macos"))]
+    #[cfg(all(unix, any(target_os = "macos", target_os = "ios")))]
     let mut buff: Vec<i32> = vec![0; 1024];
-    #[cfg(all(unix, not(target_os = "macos")))]
+    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "ios")))]
     let mut buff: Vec<gid_t> = vec![0; 1024];
 
     let name = CString::new(username.as_ref().as_bytes()).unwrap();
@@ -806,11 +806,11 @@ pub fn get_user_groups<S: AsRef<OsStr> + ?Sized>(username: &S, gid: gid_t) -> Op
     );
 
     // MacOS uses i32 instead of gid_t in getgrouplist for unknown reasons
-    #[cfg(all(unix, target_os = "macos"))]
+    #[cfg(all(unix, any(target_os = "macos", target_os = "ios")))]
     let res =
         unsafe { libc::getgrouplist(name.as_ptr(), gid as i32, buff.as_mut_ptr(), &mut count) };
 
-    #[cfg(all(unix, not(target_os = "macos")))]
+    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "ios")))]
     let res = unsafe { libc::getgrouplist(name.as_ptr(), gid, buff.as_mut_ptr(), &mut count) };
 
     if res < 0 {
@@ -1030,6 +1030,7 @@ pub mod os {
         target_os = "linux",
         target_os = "android",
         target_os = "macos",
+        target_os = "ios",
         target_os = "freebsd",
         target_os = "dragonfly",
         target_os = "openbsd",
@@ -1233,6 +1234,7 @@ pub mod os {
     /// C structs.
     #[cfg(any(
         target_os = "macos",
+        target_os = "ios",
         target_os = "freebsd",
         target_os = "dragonfly",
         target_os = "openbsd",
@@ -1341,6 +1343,7 @@ pub mod os {
     /// Any extra fields on a `User` specific to the current platform.
     #[cfg(any(
         target_os = "macos",
+        target_os = "ios",
         target_os = "freebsd",
         target_os = "dragonfly",
         target_os = "openbsd",
@@ -1364,6 +1367,7 @@ pub mod os {
         target_os = "linux",
         target_os = "android",
         target_os = "macos",
+        target_os = "ios",
         target_os = "freebsd",
         target_os = "dragonfly",
         target_os = "openbsd",
